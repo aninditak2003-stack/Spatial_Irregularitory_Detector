@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handwriting Analysis System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #e1e5eb;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #666;
+        }
+
+        /* Mode Tabs */
+        .mode-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-tabs button {
+            padding: 12px 24px;
+            border: none;
+            background: #e1e5eb;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .mode-tabs button.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .mode-tabs button:hover:not(.active) {
+            background: #d1d5db;
+        }
+
+        /* Sections */
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .section h2 {
+            font-size: 1.25rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e1e5eb;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Canvas Section */
+        #drawingCanvas {
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            cursor: crosshair;
+            touch-action: none;
+            display: block;
+            margin: 0 auto;
+            background: white;
+        }
+
+        .canvas-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            align-items: center;
+        }
+
+        .canvas-controls button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #e1e5eb;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .control-group input[type="range"] {
+            width: 80px;
+        }
+
+        .control-group input[type="color"] {
+            width: 40px;
+            height: 30px;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Image Upload */
+        .drop-zone {
+            border: 3px dashed #3498db;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8fafc;
+        }
+
+        .drop-zone:hover {
+            border-color: #2980b9;
+            background: #eef4f8;
+        }
+
+        .drop-zone p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        #imagePreview {
+            max-width: 100%;
+            max-height: 400px;
+            margin-top: 20px;
+            border-radius: 8px;
+            border: 1px solid #e1e5eb;
+        }
+
+        /* Results */
+        .results-container {
+            display: grid;
+            gap: 20px;
+        }
+
+        .result-section {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .result-section h3 {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .result-section h4 {
+            font-size: 0.95rem;
+            color: #555;
+            margin: 10px 0 8px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .feature-group {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e1e5eb;
+        }
+
+        .feature-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.9rem;
+        }
+
+        .feature-item .key {
+            color: #666;
+            text-transform: capitalize;
+        }
+
+        .feature-item .value {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .aggregated-item {
+            font-size: 0.85rem;
+            padding: 3px 0;
+            color: #555;
+        }
+
+        /* Analysis Summary */
+        .analysis-summary {
+            background: #fff;
+            border-left: 4px solid #3498db;
+        }
+
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f0f7ff;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .score-display.normal {
+            background: #e8f5e9;
+            border-left: 4px solid #27ae60;
+        }
+
+        .score-display.mild_irregularity {
+            background: #fff8e1;
+            border-left: 4px solid #f39c12;
+        }
+
+        .score-display.moderate_irregularity {
+            background: #fff3e0;
+            border-left: 4px solid #e67e22;
+        }
+
+        .score-display.high_irregularity {
+            background: #ffebee;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .score-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .classification {
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            text-transform: capitalize;
+        }
+
+        .summary-text {
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .indicators {
+            margin-top: 15px;
+        }
+
+        .indicators ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .indicator {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .indicator.low {
+            background: #fff8e1;
+            border-left: 3px solid #f39c12;
+        }
+
+        .indicator.medium {
+            background: #fff3e0;
+            border-left: 3px solid #e67e22;
+        }
+
+        .indicator.high {
+            background: #ffebee;
+            border-left: 3px solid #e74c3c;
+        }
+
+        /* Export Section */
+        .export-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .export-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .export-group label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .export-group input,
+        .export-group select {
+            padding: 8px;
+            border: 1px solid #e1e5eb;
+            border-radius: 4px;
+        }
+
+        #trainingStats {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        /* Status & Error */
+        #status {
+            padding: 10px;
+            color: #27ae60;
+            font-size: 0.9rem;
+        }
+
+        #error {
+            padding: 15px;
+            background: #ffebee;
+            color: #c0392b;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        #loading {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e1e5eb;
+            border-top-color: #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Notice */
+        .notice {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+
+        .notice p {
+            color: #1565c0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #drawingCanvas {
+                width: 100% !important;
+                height: auto !important;
+            }
+
+            .canvas-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .canvas-controls button {
+                width: 100%;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Handwriting Analysis System</h1>
+            <p>Extract spatial, temporal, and dynamic features for writing irregularity detection</p>
+        </header>
+
+        <!-- Error Display -->
+        <div id="error" class="hidden"></div>
+
+        <!-- Mode Selection -->
+        <div class="mode-tabs">
+            <button id="modeCanvas" class="active">Live Writing</button>
+            <button id="modeImage">Upload Image (PNG)</button>
+        </div>
+
+        <!-- Canvas Section -->
+        <div id="canvasSection" class="section">
+            <h2>Write Here</h2>
+            <canvas id="drawingCanvas" width="800" height="300"></canvas>
+
+            <div class="canvas-controls">
+                <button id="clearCanvas" class="btn-danger">Clear</button>
+                <button id="undoStroke" class="btn-secondary">Undo</button>
+
+                <div class="control-group">
+                    <label>Width:</label>
+                    <input type="range" id="lineWidth" min="1" max="10" value="2">
+                </div>
+
+                <div class="control-group">
+                    <label>Color:</label>
+                    <input type="color" id="lineColor" value="#000000">
+                </div>
+
+                <button id="analyzeBtn" class="btn-primary">Analyze Handwriting</button>
+            </div>
+        </div>
+
+        <!-- Image Section -->
+        <div id="imageSection" class="section hidden">
+            <h2>Upload Handwriting Image</h2>
+
+            <div class="drop-zone" id="dropZone">
+                <p>Drag & drop an image here or click to select</p>
+                <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                <button class="btn-primary" onclick="document.getElementById('imageUpload').click()">
+                    Select Image
+                </button>
+            </div>
+
+            <img id="imagePreview" class="hidden" alt="Uploaded image">
+
+            <div class="canvas-controls" style="margin-top: 20px;">
+                <button id="analyzeBtn2" class="btn-primary" onclick="app.analyze()">
+                    Analyze Image
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="section hidden">
+            <div class="spinner"></div>
+            <p>Analyzing handwriting...</p>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="section hidden"></div>
+
+        <!-- Training Data Reference Section -->
+        <div class="section" id="trainingDataSection">
+            <h2>Training Data Reference (300 Samples)</h2>
+            <p style="color: #666; margin-bottom: 15px;">Your handwriting is compared against these reference categories:</p>
+
+            <div id="trainingDataDisplay" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <button id="toggleDetailedStats" class="btn-secondary" style="margin-top: 15px;">Show Detailed Statistics</button>
+            <div id="detailedStats" class="hidden" style="margin-top: 15px; max-height: 400px; overflow-y: auto;"></div>
+        </div>
+
+        <!-- Export Section -->
+        <div class="section">
+            <h2>Export & Training</h2>
+
+            <div class="export-controls">
+                <button id="exportRaw" class="btn-secondary">Export Raw Data (CSV)</button>
+                <button id="exportStrokes" class="btn-secondary">Export Stroke Features (CSV)</button>
+                <button id="exportSession" class="btn-secondary">Export Session Features (CSV)</button>
+            </div>
+
+            <div class="export-group" style="margin-top: 20px;">
+                <label>Sample Label:</label>
+                <input type="text" id="sampleLabel" placeholder="e.g., normal, irregular, tremor">
+                <button id="addToTraining" class="btn-success">Add to Training Set</button>
+            </div>
+
+            <div class="export-group">
+                <label>Export Format:</label>
+                <select id="exportFormat">
+                    <option value="json">JSON</option>
+                    <option value="csv">CSV</option>
+                </select>
+                <button id="exportTraining" class="btn-primary">Export Training Data</button>
+            </div>
+
+            <div id="trainingStats"></div>
+        </div>
+
+        <!-- PDF Report Section -->
+        <div class="section" id="pdfReportSection">
+            <h2>Generate PDF Report</h2>
+            <p style="color: #666; margin-bottom: 15px;">Generate a comprehensive PDF report with reference images, irregularity analysis, and improvement recommendations.</p>
+
+            <div class="export-group">
+                <label>Subject Name:</label>
+                <input type="text" id="subjectName" placeholder="e.g., Patient A, Anonymous" value="Anonymous">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                <button id="generatePdfBtn" class="btn-primary" style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                    Generate PDF Report
+                </button>
+                <button id="previewPdfBtn" class="btn-secondary">Preview Report</button>
+            </div>
+
+            <div id="pdfPreviewContainer" class="hidden" style="margin-top: 15px;">
+                <h4>Report Preview:</h4>
+                <iframe id="pdfPreviewFrame" style="width: 100%; height: 500px; border: 1px solid #e1e5eb; border-radius: 8px;"></iframe>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div id="status"></div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- jsPDF Library for PDF generation (local copy for offline use) -->
+    <script src="lib/jspdf.umd.min.js"></script>
+
+    <script src="src/components/DrawingCanvas.js"></script>
+    <script src="src/components/ImageProcessor.js"></script>
+    <script src="src/features/SpatialFeatures.js"></script>
+    <script src="src/features/TemporalDynamicFeatures.js"></script>
+    <script src="src/utils/CSVExporter.js"></script>
+    <script src="src/utils/PDFReportGenerator.js"></script>
+    <script src="data/training_data.js"></script>  <!-- 300 training samples -->
+    <script src="src/ml/MLPipeline.js"></script>
+    <script src="src/index.js"></script>
+</body>
+</html>

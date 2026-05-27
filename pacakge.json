@@ -1,0 +1,22 @@
+{
+  "name": "handwriting-analysis",
+  "version": "1.0.0",
+  "description": "Handwriting feature extraction and analysis system for writing irregularity detection",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "npx http-server -p 3000 -c-1",
+    "dev": "npx http-server -p 3000 -c-1 -o"
+  },
+  "keywords": [
+    "handwriting",
+    "feature-extraction",
+    "spatial-features",
+    "temporal-features",
+    "machine-learning"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
