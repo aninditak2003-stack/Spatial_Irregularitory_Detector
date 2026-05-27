@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip:*)",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --print-to-pdf=\"/Users/rajdeepbhattacharya/Projects/Handwriting 2/docs/Project_Report_PCC-CSBS781.pdf\" \"file:///Users/rajdeepbhattacharya/Projects/Handwriting 2/docs/Project_Report_PCC-CSBS781.html\")",
+      "Bash(open \"/Users/rajdeepbhattacharya/Projects/Handwriting 2/docs/Project_Report_PCC-CSBS781.pdf\")"
+    ]
+  }
+}
