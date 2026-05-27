@@ -1,0 +1,2 @@
+# Spatial_Irregularitory_Detector
+project
